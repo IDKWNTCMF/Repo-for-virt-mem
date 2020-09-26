@@ -1,11 +1,43 @@
+import java.io.File
+
 data class Replacement(val frameNumber: Int, val replacedValue: Int, val newValue: Int)
 
-val m = 3
-val n = 5
+data class Clause(val m: Int, val n: Int, val appeals: List<Int>)
 
-fun getNumberOfReplacedFrame(curReplacement: Int) = if (curReplacement % m == 0) m else curReplacement % m
+fun parseForMN(stringWithMN: String): Pair<Int, Int> {
+    val m = stringWithMN.substringBefore(' ').toInt()
+    val n = stringWithMN.substringAfter(' ').toInt()
+    return Pair(m, n)
+}
 
-fun findReplacedFrameFIFO(indexOfElementInMemory: List<Int>): Int {
+fun parseForAppeals(appealsInOneString: String): List<Int> {
+    var unparsedAppeals = appealsInOneString
+    val appeals = mutableListOf<Int>()
+    while (' ' in unparsedAppeals) {
+        appeals.add(unparsedAppeals.substringBefore(' ').toInt())
+        unparsedAppeals = unparsedAppeals.substringAfter(' ')
+    }
+    appeals.add(unparsedAppeals.toInt()) // Add last appeal
+    return appeals
+}
+
+fun parseForClause(unparsedMN: String, unparsedAppeals: String): Clause {
+    val (m, n) = parseForMN(unparsedMN)
+    val appeals = parseForAppeals(unparsedAppeals)
+    return Clause(m, n, appeals)
+}
+
+fun parseTheInput(input: List<String>): List<Clause> {
+    val clauses = mutableListOf<Clause>()
+    for (index in input.indices step 2) {
+        clauses.add(parseForClause(input[index], input[index + 1]))
+    }
+    return clauses
+}
+
+fun getNumberOfReplacedFrame(curReplacement: Int, m: Int) = if (curReplacement % m == 0) m else curReplacement % m
+
+fun findReplacedFrameFIFO(indexOfElementInMemory: List<Int>, m: Int): Int {
     var replacedFrame = 0
     for (curFrame in 0 until m) {
         if (indexOfElementInMemory[curFrame] < indexOfElementInMemory[replacedFrame]) {
@@ -15,13 +47,13 @@ fun findReplacedFrameFIFO(indexOfElementInMemory: List<Int>): Int {
     return replacedFrame + 1
 }
 
-fun findReplacedFrameLRU(processedPrefixSize: Int, appeals: List<Int>, memory: List<Int>): Int {
-    val lastAppeal = MutableList(n + 1) {-1}
+fun findReplacedFrameLRU(processedPrefixSize: Int, curClause: Clause, memory: List<Int>): Int {
+    val lastAppeal = MutableList(curClause.n + 1) {-1}
     for (index in 0 until processedPrefixSize) {
-        lastAppeal[appeals[index]] = index
+        lastAppeal[curClause.appeals[index]] = index
     }
     var replacedFrame = 0
-    for (curFrame in 0 until m) {
+    for (curFrame in 0 until curClause.m) {
         if (lastAppeal[memory[curFrame]] < lastAppeal[memory[replacedFrame]]) {
             replacedFrame = curFrame
         }
@@ -29,15 +61,15 @@ fun findReplacedFrameLRU(processedPrefixSize: Int, appeals: List<Int>, memory: L
     return replacedFrame + 1
 }
 
-fun findReplacedFrameOPT(processedPrefixSize: Int, appeals: List<Int>, memory: List<Int>): Int {
-    val nextAppeal = MutableList(n + 1) {appeals.size}
-    for (index in processedPrefixSize + 1 until appeals.size) {
-        if (nextAppeal[appeals[index]] == appeals.size) {
-            nextAppeal[appeals[index]] = index
+fun findReplacedFrameOPT(processedPrefixSize: Int, curClause: Clause, memory: List<Int>): Int {
+    val nextAppeal = MutableList(curClause.n + 1) {curClause.appeals.size}
+    for (index in processedPrefixSize + 1 until curClause.appeals.size) {
+        if (nextAppeal[curClause.appeals[index]] == curClause.appeals.size) {
+            nextAppeal[curClause.appeals[index]] = index
         }
     }
     var replacedFrame = 0
-    for (curFrame in 0 until m) {
+    for (curFrame in 0 until curClause.m) {
         if (nextAppeal[memory[curFrame]] > nextAppeal[memory[replacedFrame]]) {
             replacedFrame = curFrame
         }
@@ -45,27 +77,27 @@ fun findReplacedFrameOPT(processedPrefixSize: Int, appeals: List<Int>, memory: L
     return replacedFrame + 1
 }
 
-fun algorithm(whatAlgorithm: String, appeals: List<Int>): Pair<Int, List<Replacement>>{
+fun algorithm(whatAlgorithm: String, curClause: Clause): Pair<Int, List<Replacement>>{
     val memory = mutableListOf<Int>()
     val indexOfElementInMemory = mutableListOf<Int>()
     var numberOfReplacements = 0
     val replacements = mutableListOf<Replacement>()
-    for ((curIndex, curPage) in appeals.withIndex()) {
+    for ((curIndex, curPage) in curClause.appeals.withIndex()) {
         if (memory.contains(curPage)) {
             replacements.add(Replacement(0, curPage, curPage))
             continue
         }
         numberOfReplacements++
-        if (memory.size < m) {
+        if (memory.size < curClause.m) {
             memory.add(curPage)
             indexOfElementInMemory.add(curIndex)
-            replacements.add(Replacement(getNumberOfReplacedFrame(numberOfReplacements), 0, curPage))
+            replacements.add(Replacement(getNumberOfReplacedFrame(numberOfReplacements, curClause.m), 0, curPage))
             continue
         }
         val replacedFrame = when (whatAlgorithm) {
-            "FIFO" -> findReplacedFrameFIFO(indexOfElementInMemory)
-            "LRU" -> findReplacedFrameLRU(curIndex, appeals, memory)
-            else -> findReplacedFrameOPT(curIndex, appeals, memory) // this branch is for an OPT algorithm
+            "FIFO" -> findReplacedFrameFIFO(indexOfElementInMemory, curClause.m)
+            "LRU" -> findReplacedFrameLRU(curIndex, curClause, memory)
+            else -> findReplacedFrameOPT(curIndex, curClause, memory) // this branch is for an OPT algorithm
         }
         replacements.add(Replacement(replacedFrame, memory[replacedFrame - 1], curPage))
         memory[replacedFrame - 1] = curPage
@@ -74,25 +106,33 @@ fun algorithm(whatAlgorithm: String, appeals: List<Int>): Pair<Int, List<Replace
     return Pair(numberOfReplacements, replacements)
 }
 
-fun outputTheResult(whatAlgorithm: String, resultOfAlgorithm: Pair<Int, List<Replacement>>) {
-    println("$whatAlgorithm: ${resultOfAlgorithm.first} replacements")
+fun outputTheResultOfAlgorithm(whatAlgorithm: String, resultOfAlgorithm: Pair<Int, List<Replacement>>, outputFile: String) {
+    File(outputFile).appendText("$whatAlgorithm: ${resultOfAlgorithm.first} replacements\n\n")
     for (replacement in resultOfAlgorithm.second) {
         if (replacement.frameNumber == 0) {
-            println("${replacement.newValue}: The needed page is in memory")
+            File(outputFile).appendText("${replacement.newValue}: The needed page is in memory\n")
             continue
         }
         if (replacement.replacedValue == 0) {
-            println("Add ${replacement.newValue} in ${replacement.frameNumber} frame")
+            File(outputFile).appendText("Add ${replacement.newValue} in ${replacement.frameNumber} frame\n")
         } else {
-            println("Replace ${replacement.replacedValue} with ${replacement.newValue} in ${replacement.frameNumber} frame")
+            File(outputFile).appendText("Replace ${replacement.replacedValue} with ${replacement.newValue} in ${replacement.frameNumber} frame\n")
         }
     }
-    println("<------The end of $whatAlgorithm output------>")
+    File(outputFile).appendText("\n")
 }
 
 fun main(args: Array<String>) {
-    val appeals = listOf(1, 2, 3, 4, 5, 1, 3, 5, 2, 1)
-    outputTheResult("FIFO", algorithm("FIFO", appeals))
-    outputTheResult("LRU", algorithm("LRU", appeals))
-    outputTheResult("OPT", algorithm("OPT", appeals))
+    val inputFile = "input.txt"
+    val outputFile = "output.txt"
+    File(outputFile).writeText("")
+    val input = File(inputFile).readLines()
+    val clauses = parseTheInput(input)
+    for ((curIndex, curClause) in clauses.withIndex()) {
+        File(outputFile).appendText("Clause ${curIndex + 1}:\n\n")
+        outputTheResultOfAlgorithm("FIFO", algorithm("FIFO", curClause), outputFile)
+        outputTheResultOfAlgorithm("LRU", algorithm("LRU", curClause), outputFile)
+        outputTheResultOfAlgorithm("OPT", algorithm("OPT", curClause), outputFile)
+        File(outputFile).appendText("\n")
+    }
 }
