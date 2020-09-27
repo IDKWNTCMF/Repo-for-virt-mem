@@ -17,7 +17,7 @@ fun parseForAppeals(appealsInOneString: String): List<Int> {
         appeals.add(unparsedAppeals.substringBefore(' ').toInt())
         unparsedAppeals = unparsedAppeals.substringAfter(' ')
     }
-    appeals.add(unparsedAppeals.toInt()) // Add last appeal
+    if (unparsedAppeals.isNotEmpty()) appeals.add(unparsedAppeals.toInt()) // Add last appeal if it existss
     return appeals
 }
 
@@ -123,8 +123,9 @@ fun outputTheResultOfAlgorithm(whatAlgorithm: String, resultOfAlgorithm: Pair<In
 }
 
 fun main(args: Array<String>) {
-    val inputFile = "input.txt"
-    val outputFile = "output.txt"
+    println(parseForMN("3 5"))
+    val inputFile = if (args.size == 2) args[0] else "input.txt"
+    val outputFile = if (args.size == 2) args[1] else "output.txt"
     File(outputFile).writeText("")
     val input = File(inputFile).readLines()
     val clauses = parseTheInput(input)
