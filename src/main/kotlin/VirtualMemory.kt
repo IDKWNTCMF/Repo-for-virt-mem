@@ -133,6 +133,5 @@ fun main(args: Array<String>) {
         outputTheResultOfAlgorithm("FIFO", algorithm("FIFO", curClause), outputFile)
         outputTheResultOfAlgorithm("LRU", algorithm("LRU", curClause), outputFile)
         outputTheResultOfAlgorithm("OPT", algorithm("OPT", curClause), outputFile)
-        File(outputFile).appendText("\n")
     }
 }
