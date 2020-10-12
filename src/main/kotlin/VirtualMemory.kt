@@ -28,57 +28,61 @@ fun findReplacedFrameFIFO(whenEnteredRAM: List<Int>, RAM: List<Int>) = RAM.index
 
 fun findReplacedFrameLRU(lastAppeal: List<Int>, RAM: List<Int>) = RAM.indexOf(lastAppeal[0]) + 1
 
-fun findReplacedFrameOPT(processedPrefixSize: Int, curClause: Clause, memory: List<Int>): Int {
-    val nextAppeal = MutableList(curClause.processSize + 1) {curClause.appeals.size}
-    for (index in processedPrefixSize + 1 until curClause.appeals.size) {
-        if (nextAppeal[curClause.appeals[index]] == curClause.appeals.size) {
-            nextAppeal[curClause.appeals[index]] = index
+fun findReplacedFrameOPT(nextAppeal: List<Int>) = nextAppeal.indexOf(nextAppeal.max()) + 1
+
+// this function returns a list of values, in the i-th place is an index of the next appeal to the same `page` if it exists
+//                                                           or a unique big Int if it is the last appeal to this `page`
+fun getNextAppeal(curClause: Clause): List<Int> {
+    val nextAppeal = mutableListOf<Int>()
+    val curLastAppeal = MutableList(curClause.processSize + 1) {-1}
+    for (index in curClause.appeals.indices) {
+        val curAppeal = curClause.appeals[index]
+        nextAppeal.add(curClause.appeals.size + curAppeal) // if it is not the last case of this appeal then this value will change later
+        if (curLastAppeal[curAppeal] != -1) {
+            nextAppeal[curLastAppeal[curAppeal]] = index
         }
+        curLastAppeal[curAppeal] = index
     }
-    var replacedFrame = 0
-    for (curFrame in 0 until curClause.RAMSize) {
-        if (nextAppeal[memory[curFrame]] > nextAppeal[memory[replacedFrame]]) {
-            replacedFrame = curFrame
-        }
-    }
-    return replacedFrame + 1
+    return nextAppeal
 }
 
 fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>{
-    val ram = mutableListOf<Int>()
+    val nextAppeal = getNextAppeal(curClause)
+    val RAM = mutableListOf<Int>()
     val whenEnteredRAM = mutableListOf<Int>()
-    val lastAppeal = mutableListOf<Int>()
-    val indexOfElementInMemory = mutableListOf<Int>()
+    val lastAppealForElementInRAM = mutableListOf<Int>()
+    val nextAppealForElementInRAM = mutableListOf<Int>()
     var numberOfReplacements = 0
     val replacements = mutableListOf<Replacement>()
     for ((curIndex, curAppeal) in curClause.appeals.withIndex()) {
-        if (ram.contains(curAppeal)) {
-            lastAppeal.remove(curAppeal)
-            lastAppeal.add(curAppeal)
+        if (RAM.contains(curAppeal)) {
+            nextAppealForElementInRAM[RAM.indexOf(curAppeal)] = nextAppeal[curIndex]
+            lastAppealForElementInRAM.remove(curAppeal)
+            lastAppealForElementInRAM.add(curAppeal)
             replacements.add(Replacement(0, curAppeal, curAppeal))
             continue
         }
         numberOfReplacements++
-        if (ram.size < curClause.RAMSize) {
+        if (RAM.size < curClause.RAMSize) {
+            nextAppealForElementInRAM.add(nextAppeal[curIndex])
             whenEnteredRAM.add(curAppeal)
-            lastAppeal.add(curAppeal)
-            ram.add(curAppeal)
-            indexOfElementInMemory.add(curIndex)
+            lastAppealForElementInRAM.add(curAppeal)
+            RAM.add(curAppeal)
             replacements.add(Replacement(getNumberOfReplacedFrame(numberOfReplacements, curClause.RAMSize), 0, curAppeal))
             continue
         }
         val replacedFrame = when (process) {
-            Process.FIFO -> findReplacedFrameFIFO(whenEnteredRAM, ram)
-            Process.LRU -> findReplacedFrameLRU(lastAppeal, ram)
-            Process.OPT -> findReplacedFrameOPT(curIndex, curClause, ram)
+            Process.FIFO -> findReplacedFrameFIFO(whenEnteredRAM, RAM)
+            Process.LRU -> findReplacedFrameLRU(lastAppealForElementInRAM, RAM)
+            Process.OPT -> findReplacedFrameOPT(nextAppealForElementInRAM)
         }
-        lastAppeal.remove(lastAppeal.first())
+        nextAppealForElementInRAM[replacedFrame - 1] = nextAppeal[curIndex]
+        lastAppealForElementInRAM.remove(lastAppealForElementInRAM.first())
         whenEnteredRAM.remove(whenEnteredRAM.first())
-        replacements.add(Replacement(replacedFrame, ram[replacedFrame - 1], curAppeal))
-        ram[replacedFrame - 1] = curAppeal
-        indexOfElementInMemory[replacedFrame - 1] = curIndex
+        replacements.add(Replacement(replacedFrame, RAM[replacedFrame - 1], curAppeal))
+        RAM[replacedFrame - 1] = curAppeal
         whenEnteredRAM.add(curAppeal)
-        lastAppeal.add(curAppeal)
+        lastAppealForElementInRAM.add(curAppeal)
     }
     return Pair(numberOfReplacements, replacements)
 }

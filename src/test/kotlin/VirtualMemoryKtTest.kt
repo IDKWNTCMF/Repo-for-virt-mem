@@ -41,6 +41,11 @@ internal class VirtualMemoryKtTest {
     }
 
     @Test
+    fun `test for getNextAppeal`() {
+        assertEquals(listOf(5, 8, 6, 14, 7, 9, 13, 15, 12, 11), getNextAppeal(Clause(3, 5, listOf(1, 2, 3, 4, 5, 1, 3, 5, 2, 1))))
+    }
+
+    @Test
     fun `simple test for findReplacedFrameFIFO`() {
         assertEquals(3, findReplacedFrameFIFO(listOf(3, 4, 5, 6), listOf(5, 6, 3, 4)))
     }
@@ -52,7 +57,7 @@ internal class VirtualMemoryKtTest {
 
     @Test
     fun `simple test for findReplacedFrameOPT`() {
-        assertEquals(2, findReplacedFrameOPT(3, Clause(3, 5, listOf(1, 2, 3, 4, 5, 1, 3, 5, 2, 1)), listOf(1, 2, 3)))
+        assertEquals(2, findReplacedFrameOPT(listOf(4, 7, 6, 5)))
     }
 
     @Test
