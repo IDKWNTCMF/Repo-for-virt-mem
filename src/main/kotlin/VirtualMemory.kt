@@ -47,28 +47,37 @@ fun getNextAppeal(curClause: Clause): List<Int> {
 }
 
 fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>{
-    val nextAppeal = getNextAppeal(curClause)
     val RAM = mutableListOf<Int>()
-    val whenEnteredRAM = mutableListOf<Int>()
-    val lastAppealForElementInRAM = mutableListOf<Int>()
-    val nextAppealForElementInRAM = mutableListOf<Int>()
+    val nextAppeal = getNextAppeal(curClause)
+
+    val whenEnteredRAM = mutableListOf<Int>()               // this list will be used in FIFO process
+
+    val lastAppealForElementInRAM = mutableListOf<Int>()    // this list will be used in LRU process
+
+    val nextAppealForElementInRAM = mutableListOf<Int>()    // this list will be used in OPT process
+
     var numberOfReplacements = 0
     val replacements = mutableListOf<Replacement>()
     for ((curIndex, curAppeal) in curClause.appeals.withIndex()) {
         if (RAM.contains(curAppeal)) {
-            nextAppealForElementInRAM[RAM.indexOf(curAppeal)] = nextAppeal[curIndex]
-            lastAppealForElementInRAM.remove(curAppeal)
-            lastAppealForElementInRAM.add(curAppeal)
             replacements.add(Replacement(0, curAppeal, curAppeal))
+
+            lastAppealForElementInRAM.remove(curAppeal)                                 // this is an `update information` part of
+            lastAppealForElementInRAM.add(curAppeal)                                    // LRU process
+
+            nextAppealForElementInRAM[RAM.indexOf(curAppeal)] = nextAppeal[curIndex]    // this is an `update information` part of OPT process
             continue
         }
         numberOfReplacements++
         if (RAM.size < curClause.RAMSize) {
-            nextAppealForElementInRAM.add(nextAppeal[curIndex])
-            whenEnteredRAM.add(curAppeal)
-            lastAppealForElementInRAM.add(curAppeal)
-            RAM.add(curAppeal)
             replacements.add(Replacement(getNumberOfReplacedFrame(numberOfReplacements, curClause.RAMSize), 0, curAppeal))
+            RAM.add(curAppeal)
+
+            whenEnteredRAM.add(curAppeal)                           // this is an `add in RAM` part of FIFO process
+
+            lastAppealForElementInRAM.add(curAppeal)                // this is an `add in RAM` part of LRU process
+
+            nextAppealForElementInRAM.add(nextAppeal[curIndex])     // this is an `add in RAM` part of OPT process
             continue
         }
         val replacedFrame = when (process) {
@@ -76,13 +85,16 @@ fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>
             Process.LRU -> findReplacedFrameLRU(lastAppealForElementInRAM, RAM)
             Process.OPT -> findReplacedFrameOPT(nextAppealForElementInRAM)
         }
-        nextAppealForElementInRAM[replacedFrame - 1] = nextAppeal[curIndex]
-        lastAppealForElementInRAM.remove(lastAppealForElementInRAM.first())
-        whenEnteredRAM.remove(whenEnteredRAM.first())
         replacements.add(Replacement(replacedFrame, RAM[replacedFrame - 1], curAppeal))
         RAM[replacedFrame - 1] = curAppeal
-        whenEnteredRAM.add(curAppeal)
-        lastAppealForElementInRAM.add(curAppeal)
+
+        whenEnteredRAM.remove(whenEnteredRAM.first())                           // this is a `recount` part
+        whenEnteredRAM.add(curAppeal)                                           // of FIFO process
+
+        lastAppealForElementInRAM.remove(lastAppealForElementInRAM.first())     // this is a `recount` part
+        lastAppealForElementInRAM.add(curAppeal)                                // of LRU process
+
+        nextAppealForElementInRAM[replacedFrame - 1] = nextAppeal[curIndex]     // this is a `recount` part of OPT process
     }
     return Pair(numberOfReplacements, replacements)
 }
