@@ -1,7 +1,5 @@
 import java.io.File
 
-data class Replacement(val frameNumber: Int, val replacedValue: Int, val newValue: Int)
-
 data class Clause(val RAMSize: Int, val processSize: Int, val appeals: List<Int>)
 
 enum class Process {
@@ -46,7 +44,7 @@ fun getNextAppeal(curClause: Clause): List<Int> {
     return nextAppeal
 }
 
-fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>{
+fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Int>> {
     val RAM = mutableListOf<Int>()
     val nextAppeal = getNextAppeal(curClause)
 
@@ -57,10 +55,10 @@ fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>
     val nextAppealForElementInRAM = mutableListOf<Int>()    // this list will be used in OPT process
 
     var numberOfReplacements = 0
-    val replacements = mutableListOf<Replacement>()
+    val replacements = mutableListOf<Int>()
     for ((curIndex, curAppeal) in curClause.appeals.withIndex()) {
         if (RAM.contains(curAppeal)) {
-            replacements.add(Replacement(0, curAppeal, curAppeal))
+            replacements.add(0)
 
             lastAppealForElementInRAM.remove(curAppeal)                                 // this is an `update information` part of
             lastAppealForElementInRAM.add(curAppeal)                                    // LRU process
@@ -70,7 +68,7 @@ fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>
         }
         numberOfReplacements++
         if (RAM.size < curClause.RAMSize) {
-            replacements.add(Replacement(getNumberOfReplacedFrame(numberOfReplacements, curClause.RAMSize), 0, curAppeal))
+            replacements.add(getNumberOfReplacedFrame(numberOfReplacements, curClause.RAMSize))
             RAM.add(curAppeal)
 
             whenEnteredRAM.add(curAppeal)                           // this is an `add in RAM` part of FIFO process
@@ -85,7 +83,7 @@ fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>
             Process.LRU -> findReplacedFrameLRU(lastAppealForElementInRAM, RAM)
             Process.OPT -> findReplacedFrameOPT(nextAppealForElementInRAM)
         }
-        replacements.add(Replacement(replacedFrame, RAM[replacedFrame - 1], curAppeal))
+        replacements.add(replacedFrame)
         RAM[replacedFrame - 1] = curAppeal
 
         whenEnteredRAM.remove(whenEnteredRAM.first())                           // this is a `recount` part
@@ -99,20 +97,10 @@ fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>
     return Pair(numberOfReplacements, replacements)
 }
 
-fun outputTheResultOfAlgorithm(process: Process, resultOfAlgorithm: Pair<Int, List<Replacement>>, outputFile: String) {
-    File(outputFile).appendText("$process: ${resultOfAlgorithm.first} replacements\n\n")
-    for (replacement in resultOfAlgorithm.second) {
-        if (replacement.frameNumber == 0) {
-            File(outputFile).appendText("${replacement.newValue}: The needed page is in memory\n")
-            continue
-        }
-        if (replacement.replacedValue == 0) {
-            File(outputFile).appendText("Add ${replacement.newValue} in ${replacement.frameNumber} frame\n")
-        } else {
-            File(outputFile).appendText("Replace ${replacement.replacedValue} with ${replacement.newValue} in ${replacement.frameNumber} frame\n")
-        }
-    }
-    File(outputFile).appendText("\n")
+fun outputTheResultOfAlgorithm(process: Process, resultOfAlgorithm: Pair<Int, List<Int>>, outputFile: String) {
+    File(outputFile).appendText("$process: ${resultOfAlgorithm.first} replacements\n")
+    resultOfAlgorithm.second.map { File(outputFile).appendText("$it ")}
+    File(outputFile).appendText("\n\n")
 }
 
 fun main(args: Array<String>) {
