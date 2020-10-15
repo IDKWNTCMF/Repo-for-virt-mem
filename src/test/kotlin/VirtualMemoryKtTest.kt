@@ -59,4 +59,14 @@ internal class VirtualMemoryKtTest {
     fun `OPT test for algorithm`() {
         assertEquals(6, algorithm(Process.OPT, Clause(3,5, listOf(1, 2, 3, 4, 5, 1, 3, 5, 2, 1))).first)
     }
+
+    @Test
+    fun `normal test for checkClause`() {
+        assertEquals(0, checkClause(Clause(3, 4, listOf(1, 2, 3, 3, 2, 1, 4, 1, 2, 3))))
+    }
+
+    @Test
+    fun `test with mistake for checkClause`() {
+        assertEquals(7, checkClause(Clause(3,4, listOf(1, 2, 3, 3, 2, 1, 5, 1, 2, 3))))
+    }
 }

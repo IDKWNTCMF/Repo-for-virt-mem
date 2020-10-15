@@ -1,5 +1,43 @@
 Clause 1:
 
+FIFO: 7 replacements
+Add 1 in 1 frame
+Add 2 in 2 frame
+Add 3 in 3 frame
+3: The needed page is in memory
+2: The needed page is in memory
+1: The needed page is in memory
+Replace 1 with 4 in 1 frame
+Replace 2 with 1 in 2 frame
+Replace 3 with 2 in 3 frame
+Replace 4 with 3 in 1 frame
+
+LRU: 5 replacements
+Add 1 in 1 frame
+Add 2 in 2 frame
+Add 3 in 3 frame
+3: The needed page is in memory
+2: The needed page is in memory
+1: The needed page is in memory
+Replace 3 with 4 in 3 frame
+1: The needed page is in memory
+2: The needed page is in memory
+Replace 4 with 3 in 3 frame
+
+OPT: 5 replacements
+Add 1 in 1 frame
+Add 2 in 2 frame
+Add 3 in 3 frame
+3: The needed page is in memory
+2: The needed page is in memory
+1: The needed page is in memory
+Replace 3 with 4 in 3 frame
+1: The needed page is in memory
+2: The needed page is in memory
+Replace 4 with 3 in 3 frame
+
+Clause 2:
+
 FIFO: 8 replacements
 Add 1 in 1 frame
 Add 2 in 2 frame
@@ -36,7 +74,7 @@ Replace 4 with 5 in 2 frame
 Replace 5 with 2 in 2 frame
 1: The needed page is in memory
 
-Clause 2:
+Clause 3:
 
 FIFO: 7 replacements
 Add 1 in 1 frame

@@ -5,7 +5,6 @@
 To run this program:
 
 Write "gradle run --args="*\<path to an input file\>* *\<path to an output file\>*" in terminal.
-If you don't write your preferences of input and output files then the program will take default values(input file: "input.txt", output file: "output.txt").
 
 Example: gradle run --args="input.txt output.txt"
 
