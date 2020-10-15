@@ -1,0 +1,98 @@
+Clause 1:
+
+FIFO: 18 replacements
+Add 8 in 1 frame
+Add 11 in 2 frame
+Add 10 in 3 frame
+8: The needed page is in memory
+Add 6 in 4 frame
+8: The needed page is in memory
+11: The needed page is in memory
+Add 1 in 5 frame
+10: The needed page is in memory
+Replace 8 with 2 in 1 frame
+Replace 11 with 3 in 2 frame
+Replace 10 with 8 in 3 frame
+3: The needed page is in memory
+8: The needed page is in memory
+Replace 6 with 12 in 4 frame
+Replace 1 with 11 in 5 frame
+Replace 2 with 1 in 1 frame
+Replace 3 with 7 in 2 frame
+Replace 8 with 5 in 3 frame
+5: The needed page is in memory
+12: The needed page is in memory
+Replace 12 with 9 in 4 frame
+Replace 11 with 4 in 5 frame
+Replace 1 with 10 in 1 frame
+Replace 7 with 3 in 2 frame
+3: The needed page is in memory
+3: The needed page is in memory
+Replace 5 with 8 in 3 frame
+8: The needed page is in memory
+8: The needed page is in memory
+
+LRU: 18 replacements
+Add 8 in 1 frame
+Add 11 in 2 frame
+Add 10 in 3 frame
+8: The needed page is in memory
+Add 6 in 4 frame
+8: The needed page is in memory
+11: The needed page is in memory
+Add 1 in 5 frame
+10: The needed page is in memory
+Replace 6 with 2 in 4 frame
+Replace 8 with 3 in 1 frame
+Replace 11 with 8 in 2 frame
+3: The needed page is in memory
+8: The needed page is in memory
+Replace 1 with 12 in 5 frame
+Replace 10 with 11 in 3 frame
+Replace 2 with 1 in 4 frame
+Replace 3 with 7 in 1 frame
+Replace 8 with 5 in 2 frame
+5: The needed page is in memory
+12: The needed page is in memory
+Replace 11 with 9 in 3 frame
+Replace 1 with 4 in 4 frame
+Replace 7 with 10 in 1 frame
+Replace 5 with 3 in 2 frame
+3: The needed page is in memory
+3: The needed page is in memory
+Replace 12 with 8 in 5 frame
+8: The needed page is in memory
+8: The needed page is in memory
+
+OPT: 13 replacements
+Add 8 in 1 frame
+Add 11 in 2 frame
+Add 10 in 3 frame
+8: The needed page is in memory
+Add 6 in 4 frame
+8: The needed page is in memory
+11: The needed page is in memory
+Add 1 in 5 frame
+10: The needed page is in memory
+Replace 6 with 2 in 4 frame
+Replace 2 with 3 in 4 frame
+8: The needed page is in memory
+3: The needed page is in memory
+8: The needed page is in memory
+Replace 8 with 12 in 1 frame
+11: The needed page is in memory
+1: The needed page is in memory
+Replace 11 with 7 in 2 frame
+Replace 7 with 5 in 2 frame
+5: The needed page is in memory
+12: The needed page is in memory
+Replace 12 with 9 in 1 frame
+Replace 9 with 4 in 1 frame
+10: The needed page is in memory
+3: The needed page is in memory
+3: The needed page is in memory
+3: The needed page is in memory
+Replace 10 with 8 in 3 frame
+8: The needed page is in memory
+8: The needed page is in memory
+

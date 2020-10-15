@@ -13,9 +13,31 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    integrationTestImplementation.extendsFrom implementation
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
+    integrationTestImplementation "org.jetbrains.kotlin:kotlin-test:1.4.10"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+}
+
+sourceSets {
+    integrationTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+        java {
+            srcDirs = ['src/integrationTest/kotlin']
+        }
+    }
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    useJUnitPlatform()
 }
 
 test {
