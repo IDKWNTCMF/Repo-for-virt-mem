@@ -26,38 +26,23 @@ internal class VirtualMemoryKtTest {
     }
 
     @Test
-    fun `simple test for getNumberOfReplacedFrame`() {
-        assertEquals(2, getNumberOfReplacedFrame(2, 3))
-    }
-
-    @Test
-    fun `test when current replacement number is more than m for getNumberOfReplacedFrame`() {
-        assertEquals(2, getNumberOfReplacedFrame(6, 4))
-    }
-
-    @Test
-    fun `test when current replacement number equals m for getNumberOfReplacedFrame`() {
-        assertEquals(4, getNumberOfReplacedFrame(4, 4))
-    }
-
-    @Test
     fun `test for getNextAppeal`() {
         assertEquals(listOf(5, 8, 6, 14, 7, 9, 13, 15, 12, 11), getNextAppeal(Clause(3, 5, listOf(1, 2, 3, 4, 5, 1, 3, 5, 2, 1))))
     }
 
     @Test
     fun `simple test for findReplacedFrameFIFO`() {
-        assertEquals(3, findReplacedFrameFIFO(listOf(3, 4, 5, 6), listOf(5, 6, 3, 4)))
+        assertEquals(3, Process.FIFO.findReplacedFrame(listOf(5, 6, 3, 4), mutableListOf(3, 4, 5, 6)))
     }
 
     @Test
     fun `simple test for findReplacedFrameLRU`() {
-        assertEquals(3, findReplacedFrameLRU(listOf(3, 1, 2, 4), listOf(1, 2, 3, 4)))
+        assertEquals(3, Process.LRU.findReplacedFrame(listOf(1, 2, 3, 4), mutableListOf(3, 1, 2, 4)))
     }
 
     @Test
     fun `simple test for findReplacedFrameOPT`() {
-        assertEquals(2, findReplacedFrameOPT(listOf(4, 7, 6, 5)))
+        assertEquals(2, Process.OPT.findReplacedFrame(listOf(1, 2, 3, 4), mutableListOf(4, 7, 6, 5)))
     }
 
     @Test
