@@ -22,22 +22,16 @@ fun parseTheInput(input: List<String>): List<Clause> {
     return clauses
 }
 
-fun getNumberOfReplacedFrame(curReplacement: Int, RAMSize: Int) = if (curReplacement % RAMSize == 0) RAMSize else curReplacement % RAMSize
-
-fun findReplacedFrameFIFO(whenEnteredRAM: List<Int>, RAM: List<Int>) = RAM.indexOf(whenEnteredRAM[0]) + 1
-
-fun findReplacedFrameLRU(lastAppeal: List<Int>, RAM: List<Int>) = RAM.indexOf(lastAppeal[0]) + 1
-
-fun findReplacedFrameOPT(nextAppeal: List<Int>) = nextAppeal.indexOf(nextAppeal.max()) + 1
-
-// this function returns a list of values, in the i-th place is an index of the next appeal to the same `page` if it exists
-//                                                           or a unique big Int if it is the last appeal to this `page`
+// this function returns a list of values,
+// in the i-th place is an index of the next appeal to the same `page` if it exists
+// or a unique big Int if it is the last appeal to this `page`
 fun getNextAppeal(curClause: Clause): List<Int> {
     val nextAppeal = mutableListOf<Int>()
     val curLastAppeal = MutableList(curClause.processSize + 1) {-1}
     for (index in curClause.appeals.indices) {
         val curAppeal = curClause.appeals[index]
-        nextAppeal.add(curClause.appeals.size + curAppeal) // if it is not the last case of this appeal then this value will change later
+        nextAppeal.add(curClause.appeals.size + curAppeal)
+        // if it is not the last case of this appeal then this value will change later
         if (curLastAppeal[curAppeal] != -1) {
             nextAppeal[curLastAppeal[curAppeal]] = index
         }
@@ -46,55 +40,64 @@ fun getNextAppeal(curClause: Clause): List<Int> {
     return nextAppeal
 }
 
+fun Process.update (RAM: List<Int>, additionalList: MutableList<Int>, appeal: Int, newValueForOPT: Int) {
+    when (this) {
+        Process.FIFO -> {}
+        Process.LRU -> {
+            additionalList.remove(appeal)
+            additionalList.add(appeal)
+        }
+        Process.OPT -> additionalList[RAM.indexOf(appeal)] = newValueForOPT
+    }
+}
+
+fun Process.add (additionalList: MutableList<Int>, newValueForFIFOorLRU: Int, newValueForOPT: Int) {
+    when (this) {
+        Process.OPT -> additionalList.add(newValueForOPT)
+        else -> additionalList.add(newValueForFIFOorLRU)
+    }
+}
+
+fun Process.findReplacedFrame (RAM: List<Int>, additionalList: MutableList<Int>): Int {
+    return when (this) {
+        Process.OPT -> additionalList.indexOf(additionalList.max()) + 1
+        else -> RAM.indexOf(additionalList[0]) + 1
+    }
+}
+
+fun Process.recount (additionalList: MutableList<Int>, appeal: Int, replacedFrame: Int, newValueForOPT: Int) {
+    when (this) {
+        Process.OPT -> additionalList[replacedFrame - 1] = newValueForOPT
+        else -> {
+            additionalList.remove(additionalList.first())
+            additionalList.add(appeal)
+        }
+    }
+}
+
 fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>> {
     val RAM = mutableListOf<Int>()
     val nextAppeal = getNextAppeal(curClause)
-
-    val whenEnteredRAM = mutableListOf<Int>()               // this list will be used in FIFO process
-
-    val lastAppealForElementInRAM = mutableListOf<Int>()    // this list will be used in LRU process
-
-    val nextAppealForElementInRAM = mutableListOf<Int>()    // this list will be used in OPT process
-
+    val additionalList = mutableListOf<Int>()
     var numberOfReplacements = 0
     val replacements = mutableListOf<Replacement>()
     for ((curIndex, curAppeal) in curClause.appeals.withIndex()) {
         if (RAM.contains(curAppeal)) {
             replacements.add(Replacement(0, curAppeal, curAppeal))
-
-            lastAppealForElementInRAM.remove(curAppeal)                                 // this is an `update information` part of
-            lastAppealForElementInRAM.add(curAppeal)                                    // LRU process
-
-            nextAppealForElementInRAM[RAM.indexOf(curAppeal)] = nextAppeal[curIndex]    // this is an `update information` part of OPT process
+            process.update(RAM, additionalList, curAppeal, nextAppeal[curIndex])
             continue
         }
         numberOfReplacements++
         if (RAM.size < curClause.RAMSize) {
-            replacements.add(Replacement(getNumberOfReplacedFrame(numberOfReplacements, curClause.RAMSize), 0, curAppeal))
+            replacements.add(Replacement(RAM.size + 1, 0, curAppeal))
             RAM.add(curAppeal)
-
-            whenEnteredRAM.add(curAppeal)                           // this is an `add in RAM` part of FIFO process
-
-            lastAppealForElementInRAM.add(curAppeal)                // this is an `add in RAM` part of LRU process
-
-            nextAppealForElementInRAM.add(nextAppeal[curIndex])     // this is an `add in RAM` part of OPT process
+            process.add(additionalList, curAppeal, nextAppeal[curIndex])
             continue
         }
-        val replacedFrame = when (process) {
-            Process.FIFO -> findReplacedFrameFIFO(whenEnteredRAM, RAM)
-            Process.LRU -> findReplacedFrameLRU(lastAppealForElementInRAM, RAM)
-            Process.OPT -> findReplacedFrameOPT(nextAppealForElementInRAM)
-        }
+        val replacedFrame = process.findReplacedFrame(RAM, additionalList)
         replacements.add(Replacement(replacedFrame, RAM[replacedFrame - 1], curAppeal))
         RAM[replacedFrame - 1] = curAppeal
-
-        whenEnteredRAM.remove(whenEnteredRAM.first())                           // this is a `recount` part
-        whenEnteredRAM.add(curAppeal)                                           // of FIFO process
-
-        lastAppealForElementInRAM.remove(lastAppealForElementInRAM.first())     // this is a `recount` part
-        lastAppealForElementInRAM.add(curAppeal)                                // of LRU process
-
-        nextAppealForElementInRAM[replacedFrame - 1] = nextAppeal[curIndex]     // this is a `recount` part of OPT process
+        process.recount(additionalList, curAppeal, replacedFrame, nextAppeal[curIndex])
     }
     return Pair(numberOfReplacements, replacements)
 }
