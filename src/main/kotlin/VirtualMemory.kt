@@ -12,9 +12,9 @@ enum class Process {
 }
 
 fun parseClause(unparsedSizes: String, unparsedAppeals: String): Clause {
-    val (RAMSize, processSize) = unparsedSizes.split(" ").map { it.toInt() }
+    val (RAMSize, maxNumberOfAppeal) = unparsedSizes.split(" ").map { it.toInt() }
     val appeals = unparsedAppeals.split(" ").map { it.toInt() }
-    return Clause(RAMSize, processSize, appeals)
+    return Clause(RAMSize, maxNumberOfAppeal, appeals)
 }
 
 fun parseTheInput(input: List<String>): List<Clause> {
@@ -26,8 +26,8 @@ fun parseTheInput(input: List<String>): List<Clause> {
 }
 
 // this function returns a list of values,
-// in the i-th place is an index of the next appeal to the same `page` if it exists
-// or a unique big Int if it is the last appeal to this `page`
+// in the i-th place is an index of the next appeal for the same `page` if it exists
+// or a unique big Int if it is the last appeal for this `page`
 fun getNextAppeal(curClause: Clause): List<Int> {
     val nextAppeal = mutableListOf<Int>()
     val curLastAppeal = MutableList(curClause.maxNumberOfAppeal + 1) {-1}
@@ -105,7 +105,8 @@ fun algorithm(process: Process, curClause: Clause): Pair<Int, List<Replacement>>
     return Pair(numberOfReplacements, replacements)
 }
 
-fun outputTheResultOfAlgorithm(process: Process, resultOfAlgorithm: Pair<Int, List<Replacement>>, outputFile: String) {
+fun outputTheResultOfAlgorithm(process: Process, resultOfAlgorithm: Pair<Int, List<Replacement>>, clauseNumber: Int, outputFile: String) {
+    if (process == Process.FIFO) File(outputFile).appendText("Clause $clauseNumber:\n\n")
     File(outputFile).appendText("$process: ${resultOfAlgorithm.first} replacements\n")
     for (replacement in resultOfAlgorithm.second) {
         if (replacement.frameNumber == 0) {
@@ -158,10 +159,9 @@ fun main(args: Array<String>) {
             if (!checkClause(curClause, numberOfClause + 1)) {
                 continue
             }
-            File(outputFile).appendText("Clause ${numberOfClause + 1}:\n\n")
-            outputTheResultOfAlgorithm(Process.FIFO, algorithm(Process.FIFO, curClause), outputFile)
-            outputTheResultOfAlgorithm(Process.LRU, algorithm(Process.LRU, curClause), outputFile)
-            outputTheResultOfAlgorithm(Process.OPT, algorithm(Process.OPT, curClause), outputFile)
+            outputTheResultOfAlgorithm(Process.FIFO, algorithm(Process.FIFO, curClause), numberOfClause + 1, outputFile)
+            outputTheResultOfAlgorithm(Process.LRU, algorithm(Process.LRU, curClause), numberOfClause + 1, outputFile)
+            outputTheResultOfAlgorithm(Process.OPT, algorithm(Process.OPT, curClause), numberOfClause + 1, outputFile)
         }
     }
     catch (e: IndexOutOfBoundsException) {
