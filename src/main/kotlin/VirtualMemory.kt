@@ -122,11 +122,30 @@ fun outputTheResultOfAlgorithm(process: Process, resultOfAlgorithm: Pair<Int, Li
     File(outputFile).appendText("\n")
 }
 
-fun checkClause(curClause: Clause): Int {
-    for ((curAppealNumber, appeal) in curClause.appeals.withIndex()) {
-        if (appeal > curClause.maxNumberOfAppeal) return curAppealNumber + 1
+fun checkClause(curClause: Clause, clauseNumber: Int): Boolean {
+    if (curClause.RAMSize <= 0) {
+        println("In clause $clauseNumber size of RAM must be more than 0!")
+        return false
     }
-    return 0
+    if (curClause.maxNumberOfAppeal <= 0) {
+        println("In clause $clauseNumber max number of appeal must be more than 0!")
+        return false
+    }
+    if (curClause.RAMSize >= curClause.maxNumberOfAppeal) {
+        println("In clause $clauseNumber size of RAM must be less than max number of appeal!")
+        return false
+    }
+    for ((curIndex, appeal) in curClause.appeals.withIndex()) {
+        if (appeal > curClause.maxNumberOfAppeal) {
+            println("${curIndex + 1} element in clause $clauseNumber is more than expected!")
+            return false
+        }
+        if (appeal <= 0) {
+            println("${curIndex + 1} element in clause $clauseNumber must be more than 0!")
+            return false
+        }
+    }
+    return true
 }
 
 fun main(args: Array<String>) {
@@ -136,13 +155,7 @@ fun main(args: Array<String>) {
         val input = File(inputFile).readLines()
         val clauses = parseTheInput(input)
         for ((numberOfClause, curClause) in clauses.withIndex()) {
-            val resultOfCheckClause = checkClause(curClause)
-            if (resultOfCheckClause != 0) {
-                println("$resultOfCheckClause element in clause ${numberOfClause + 1} is more than expected!")
-                continue
-            }
-            if (curClause.RAMSize >= curClause.maxNumberOfAppeal) {
-                println("In clause ${numberOfClause + 1} RAM size must be less than max number of appeal!")
+            if (!checkClause(curClause, numberOfClause + 1)) {
                 continue
             }
             File(outputFile).appendText("Clause ${numberOfClause + 1}:\n\n")

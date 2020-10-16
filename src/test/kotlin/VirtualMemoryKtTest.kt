@@ -62,11 +62,31 @@ internal class VirtualMemoryKtTest {
 
     @Test
     fun `normal test for checkClause`() {
-        assertEquals(0, checkClause(Clause(3, 4, listOf(1, 2, 3, 3, 2, 1, 4, 1, 2, 3))))
+        assertEquals(true, checkClause(Clause(3, 4, listOf(1, 2, 3, 3, 2, 1, 4, 1, 2, 3)), 1))
     }
 
     @Test
-    fun `test with mistake for checkClause`() {
-        assertEquals(7, checkClause(Clause(3,4, listOf(1, 2, 3, 3, 2, 1, 5, 1, 2, 3))))
+    fun `test with RAM size not a positive Int for checkClause`() {
+        assertEquals(false, checkClause(Clause(-3,4, listOf(1, 2, 3, 3, 2, 1, 4, 1, 2, 3)), 2))
+    }
+
+    @Test
+    fun `test with max number of appeal not a positive Int for checkClause`() {
+        assertEquals(false, checkClause(Clause(3,-4, listOf(1, 2, 3, 3, 2, 1, 4, 1, 2, 3)), 3))
+    }
+
+    @Test
+    fun `test with max number of appeal less than RAM size for checkClause`() {
+        assertEquals(false, checkClause(Clause(5,4, listOf(1, 2, 3, 3, 2, 1, 4, 1, 2, 3)), 4))
+    }
+
+    @Test
+    fun `test with one of appeals is more than expected for checkClause`() {
+        assertEquals(false, checkClause(Clause(3,4, listOf(1, 2, 3, 3, 2, 1, 5, 1, 2, 3)), 5))
+    }
+
+    @Test
+    fun `test with one of appeals is not a positive Int for checkClause`() {
+        assertEquals(false, checkClause(Clause(3,4, listOf(1, -2, 3, 3, 2, 1, 4, 1, 2, 3)), 6))
     }
 }
