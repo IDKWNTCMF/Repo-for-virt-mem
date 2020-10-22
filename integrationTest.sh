@@ -1,5 +1,5 @@
 #!/bin/bash
-kotlinc src/main/kotlin/VirtualMemory.kt -include-runtime -d VirtualMemory.jar
+jar src/main/kotlin/VirtualMemory.kt VirtualMemory.jar
 for (( testNumber = 1; testNumber <= 10; testNumber++ ))
 do
 if [ $testNumber -eq 10 ]
