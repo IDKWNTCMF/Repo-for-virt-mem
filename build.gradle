@@ -6,6 +6,8 @@ plugins {
 
 group 'org.example'
 
+mainClassName = "VirtualMemoryKt"
+
 repositories {
     mavenCentral()
 }
@@ -33,7 +35,7 @@ sourceSets {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'main'
+        attributes 'Main-Class': 'VirtualMemoryKt'
     }
     from sourceSets.main.output
     dependsOn configurations.runtimeClasspath
