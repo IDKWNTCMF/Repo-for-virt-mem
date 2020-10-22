@@ -1,5 +1,5 @@
 #!/bin/bash
-jar src/main/kotlin/VirtualMemory.kt VirtualMemory.jar
+gradle jar
 for (( testNumber = 1; testNumber <= 10; testNumber++ ))
 do
 if [ $testNumber -eq 10 ]
@@ -10,11 +10,12 @@ else
 inputFile="data/Input0${testNumber}.txt"
 outputFile="data/Output0${testNumber}.txt"
 fi
-java -jar VirtualMemory.jar $inputFile output.txt
+java -jar build/libs/prog-2020-virt-mem-IDKWNTCMF.jar $inputFile output.txt
 diff -q $outputFile output.txt
 if [ $? -eq 1 ] 
 then 
 echo "test $testNumber failed"
+exit $testNumber
 else
 echo "test $testNumber passed"
 fi
